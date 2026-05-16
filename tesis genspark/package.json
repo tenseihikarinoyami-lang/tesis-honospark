@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc --noEmit",
+    "build": "echo 'Build skipped: using Serverless Node.js runtime'",
     "typecheck": "tsc --noEmit",
-    "start": "node dist/server.js",
+    "start": "node api/index.js",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:setup": "npm run db:migrate && npm run db:seed"
