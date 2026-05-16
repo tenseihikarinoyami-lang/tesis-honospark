@@ -3,19 +3,25 @@
  * Usa @neondatabase/serverless (compatible con Vercel + Neon Postgres)
  * Migrado desde Cloudflare D1 (SQLite) → Neon PostgreSQL
  */
-import { neon, neonConfig } from '@neondatabase/serverless'
-
-// Habilitar caché de conexiones para mejor rendimiento en serverless
-neonConfig.fetchConnectionCache = true
+import { neon } from '@neondatabase/serverless'
 
 /**
  * Función sql para ejecutar queries con parámetros seguros.
  * Uso: sql\`SELECT * FROM users WHERE id = ${userId}\`
  */
 function createSql() {
-  const DATABASE_URL = process.env.POSTGRES_URL || process.env.DATABASE_URL || ''
+  let DATABASE_URL = process.env.POSTGRES_URL || process.env.DATABASE_URL || ''
   if (!DATABASE_URL) {
     throw new Error('Variable de entorno POSTGRES_URL o DATABASE_URL no configurada')
+  }
+  // Eliminar channel_binding=require: no soportado por el driver HTTP de @neondatabase/serverless
+  // Causa que las funciones Vercel se congelen indefinidamente
+  try {
+    const url = new URL(DATABASE_URL)
+    url.searchParams.delete('channel_binding')
+    DATABASE_URL = url.toString()
+  } catch {
+    // Si la URL no se puede parsear, usar como está
   }
   return neon(DATABASE_URL)
 }
@@ -26,7 +32,7 @@ export function getSql() {
 }
 
 // Re-export de neon para uso directo si se necesita
-export { neon, neonConfig }
+export { neon }
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
