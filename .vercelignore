@@ -1,6 +1,0 @@
-backend/
-venv/
-__pycache__/
-*.db
-*.log
-proyectos/
