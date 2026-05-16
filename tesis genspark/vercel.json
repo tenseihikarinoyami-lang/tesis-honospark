@@ -1,5 +1,11 @@
 {
   "version": 2,
+  "experimentalServices": {
+    "app": {
+      "routePrefix": "/",
+      "entrypoint": "api/index.ts"
+    }
+  },
   "builds": [
     {
       "src": "api/index.ts",
