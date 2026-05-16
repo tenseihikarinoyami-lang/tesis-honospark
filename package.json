@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "echo 'Vercel will deploy api/index.ts as a serverless function.'",
+    "build": "npm run build:css && echo 'Vercel will deploy api/index.ts as a serverless function.'",
+    "build:css": "tailwindcss -i ./src/style.css -o ./public/style.css --minify",
     "typecheck": "tsc --noEmit",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
@@ -19,6 +20,9 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
     "tsx": "^4.19.2",
     "typescript": "^5.8.3"
   }

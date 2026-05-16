@@ -10,7 +10,9 @@ export function getMainHTML(): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ThesisForge AI v2.0 - Generador de Tesis con IA</title>
+  <!-- Tailwind CSS vía CDN (necesario porque /style.css no puede servirse estáticamente en esta arquitectura) -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: {} } }</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -27,8 +29,8 @@ export function getMainHTML(): string {
       --card: #1e293b;
       --border: #334155;
     }
-    body { background: var(--dark); color: #e2e8f0; min-height: 100vh; }
-    .gradient-text { background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    body { background-color: var(--dark); color: #e2e8f0; font-family: 'Inter', sans-serif; min-height: 100vh; }
+    .gradient-text { background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%); }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
     .card-hover { transition: all 0.2s ease; }
@@ -82,14 +84,8 @@ export function getMainHTML(): string {
     .nav-tab.active { background: rgba(99,102,241,0.15); color: var(--primary); font-weight: 600; }
     .table-row { border-bottom: 1px solid var(--border); transition: background 0.15s; }
     .table-row:hover { background: rgba(99,102,241,0.05); }
-    #app { display: none; }
-    #auth-screen { display: flex; }
     .loading-pulse { animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
     .ai-provider-btn { border: 2px solid var(--border); border-radius: 10px; padding: 12px; cursor: pointer; transition: all 0.2s; text-align: center; }
     .ai-provider-btn.selected { border-color: var(--primary); background: rgba(99,102,241,0.1); }
     select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
@@ -184,7 +180,7 @@ export function getMainHTML(): string {
 </div>
 
 <!-- ══════════════════════════ APP PRINCIPAL ══════════════════════════════ -->
-<div id="app" class="flex h-screen overflow-hidden">
+<div id="app" class="flex h-screen overflow-hidden" style="display:none">
 
   <!-- Sidebar -->
   <aside class="sidebar w-64 flex flex-col h-full flex-shrink-0">
@@ -480,10 +476,19 @@ async function api(method, path, body = null) {
   if (state.token) headers['Authorization'] = 'Bearer ' + state.token
   const opts = { method, headers }
   if (body) opts.body = JSON.stringify(body)
-  const res = await fetch(API + path, opts)
-  const data = await res.json().catch(() => ({ error: 'Respuesta inválida del servidor' }))
-  if (!res.ok) throw new Error(data.error || 'Error ' + res.status)
-  return data
+  
+  try {
+    const res = await fetch(API + path, opts)
+    const data = await res.json().catch(() => ({ error: 'Respuesta inválida del servidor' }))
+    if (!res.ok) {
+      console.error('[API Error]', { path, status: res.status, data })
+      throw new Error(data.error || 'Error ' + res.status)
+    }
+    return data
+  } catch (err) {
+    console.error('[API Fetch Fatal]', err)
+    throw err
+  }
 }
 
 // ── Toast Notifications ───────────────────────────────────────────────────────
